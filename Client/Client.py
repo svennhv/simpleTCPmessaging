@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import socket
+import json
 from MessageReceiver import MessageReceiver
 from MessageParser import MessageParser
 
@@ -20,8 +21,9 @@ class Client:
 
         self.host = host
         self.server_port = server_port
-        self.run()
-        self.messageReciever = MessageReceiver(self,self.connection) # Setting up the message reciever service Not sure if correct parameter list!
+        #self.run()
+        #self.messageReciever = MessageReceiver(self,self.connection) # Setting up the message reciever service Not sure if correct parameter list!
+        self.messageParser = MessageParser()
 
 
 
@@ -35,7 +37,7 @@ class Client:
 
     def receive_message(self, message):
         # TODO: Handle incoming message
-        messageAsString = MessageParser.parse(message)
+        messageAsString = self.messageParser.parse(message)
         # Handle command
         print(messageAsString) #For example?
 
