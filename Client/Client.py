@@ -17,6 +17,8 @@ class Client:
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         
         # TODO: Finish init process with necessary code
+        self.host = host
+        self.server_port = server_port
         self.run()
 
     def run(self):
@@ -24,12 +26,13 @@ class Client:
         self.connection.connect((self.host, self.server_port))
         
     def disconnect(self):
-        # TODO: Handle disconnection
+        # 
         self.connection.close()
         pass
 
     def receive_message(self, message):
         # TODO: Handle incoming message
+        MessageParser.parse
         pass
 
     def send_payload(self, data):
