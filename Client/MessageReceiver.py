@@ -19,6 +19,6 @@ class MessageReceiver(Thread):
         # TODO: Finish initialization of MessageReceiver
 
     def run(self):
-        recievedMessage = self.connection.recv(1024)
+        recievedMessage = self.connection.recv(1024) #Added by Pål, not sure if correct, but this is how the book recieves messages from the server
         # TODO: Make MessageReceiver receive and handle payloads
         pass
