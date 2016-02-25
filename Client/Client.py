@@ -36,7 +36,8 @@ class Client:
     def receive_message(self, message):
         # TODO: Handle incoming message
         messageAsString = MessageParser.parse(message)
-        #Handle command
+        # Handle command
+        print(messageAsString) #For example?
 
     def send_payload(self, data):
         # TODO: Handle sending of a payload
