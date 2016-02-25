@@ -1,4 +1,4 @@
-
+import json
 
 class MessageParser():
     def __init__(self):
@@ -12,11 +12,10 @@ class MessageParser():
 
     def parse(self, payload):
         payload = json.loads(payload)
-
         if payload['response'] in self.possible_responses:
-            return self.possible_responses[payload['response']](payload)
+           return self.possible_responses[payload['response']](payload)
         else:
-            # Response not valid
+            pass
 
     def parse_error(self, payload):
         return 'Error recieved: ' + payload['content']
@@ -25,10 +24,10 @@ class MessageParser():
         return 'Server responds: ' + payload['content']
 
     def parse_message(self, payload):
-        return 'User ' + payload['sender'] + 'sent you a message: ' + payload['content']
+        return 'User ' + payload['sender'] + ' sent you a message: ' + payload['content']
 
     def parse_history(self, payload):
-        listOfMessages 'A list of previous message responses: '
-        for message in payload['content']:
-            listOfMessages = listOfMessages + parse(message)
+        listOfMessages = 'A list of previous message responses: '
+        for message in payload['content']: # Iterating over the list in 'content'. This is a list of json formatted strings
+            listOfMessages = listOfMessages + '\n' + self.parse(json.dumps(message)) # Not sure if this is correct
         return listOfMessages
