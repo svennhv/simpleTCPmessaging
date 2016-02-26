@@ -16,9 +16,6 @@ class Client:
 
         # Set up the socket connection to the server
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        
-        # TODO: Finish init process with necessary code
-
         self.host = host
         self.server_port = server_port
         self.run()
@@ -32,17 +29,13 @@ class Client:
         self.connection.connect((self.host, self.server_port))
         
     def disconnect(self):
-        # TODO, DISCONNECT
         self.connection.close()
 
     def recieve_message(self, message):
-        # TODO: Handle incoming message
         messageAsString = self.messageParser.parse(message)
-        # Handle command
-        print(messageAsString) #For example?
+        print(messageAsString)
 
     def send_payload(self, data):
-        # TODO: Handle sending of a payload
         self.messageReciever.connection.send(data) #This assumes that "data" already is in JSON format
 
     def messageToPayload(self, message):
