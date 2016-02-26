@@ -12,16 +12,23 @@ class MessageReceiver(Thread):
         """
         This method is executed when creating a new MessageReceiver object
         """
+        self.client = client
+        self.connection = connection
+        self = Thread(target = self.run) # Initializing the object as a thread object
 
         # Flag to run thread as a deamon
         self.daemon = True
 
         # TODO: Finish initialization of MessageReceiver
-        
         self.client = client
         self.connection = connection
 
+        # Must somehow initiaze thread(). This is my try
+        self.start()
+        #recieverThread.join() #Not sure if needed?
+
     def run(self):
-        recievedMessage = self.connection.recv(1024) #Added by Pål, not sure if correct, but this is how the book recieves messages from the server
-        self.client.recieve_message(recievedMessage) #Added by Pål
-        # TODO: Make MessageReceiver receive and handle payloads
+        while(True):
+            recievedMessage = self.connection.recv(1024) #Not sure if correct, but this is how the book recieves messages from the server
+            self.client.recieve_message(recievedMessage) 
+            # Maybe add a wait statement?
