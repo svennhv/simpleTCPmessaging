@@ -19,16 +19,11 @@ class MessageReceiver(Thread):
         # Flag to run thread as a deamon
         self.daemon = True
 
-        # TODO: Finish initialization of MessageReceiver
-        self.client = client
-        self.connection = connection
-
-        # Must somehow initiaze thread(). This is my try
         self.start()
-        #recieverThread.join() #Not sure if needed?
+        #self.join() #Not sure if needed?
 
     def run(self):
         while(True):
             recievedMessage = self.connection.recv(1024) #Not sure if correct, but this is how the book recieves messages from the server
-            self.client.recieve_message(recievedMessage) 
+            self.client.recieve_message(recievedMessage) # Calling function to handle response
             # Maybe add a wait statement?

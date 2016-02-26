@@ -21,8 +21,8 @@ class Client:
 
         self.host = host
         self.server_port = server_port
-        #self.run()
-        #self.messageReciever = MessageReceiver(self,self.connection) # Setting up the message reciever service Not sure if correct parameter list!
+        self.run()
+        self.messageReciever = MessageReceiver(self,self.connection)
         self.messageParser = MessageParser()
 
 
@@ -35,7 +35,7 @@ class Client:
         # TODO, DISCONNECT
         self.connection.close()
 
-    def receive_message(self, message):
+    def recieve_message(self, message):
         # TODO: Handle incoming message
         messageAsString = self.messageParser.parse(message)
         # Handle command
@@ -44,8 +44,21 @@ class Client:
     def send_payload(self, data):
         # TODO: Handle sending of a payload
         self.messageReciever.connection.send(data) #This assumes that "data" already is in JSON format
-        
-    # More methods may be needed!
+
+    def messageToPayload(self, message):
+        # Converting user input to JSON format. Done in many steps to make the logic transparent
+        splitMessage = message.split(None, 1) #Separating request and content
+        request = splitMessage[0] if len(splitMessage) > 0 else None
+        content = splitMessage[1] if len(splitMessage) > 1 else None
+        payloadAsDictionary = {'request' : request,'content' : content}
+        payload = json.dumps(payloadAsDictionary)
+        return payload
+
+    def chatClient(self):
+        while True:
+            userInput = raw_input()
+            payload = self.messageToPayload(userInput)
+            self.send_payload(payload)
 
 
 if __name__ == '__main__':
@@ -56,3 +69,4 @@ if __name__ == '__main__':
     No alterations are necessary
     """
     client = Client('localhost', 9998)
+    client.chatClient()
