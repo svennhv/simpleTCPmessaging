@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import SocketServer
+import json
 
 """
 Variables and functions that must be used by all the ClientHandler objects
@@ -22,12 +23,70 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         self.port = self.client_address[1]
         self.connection = self.request
 
+        self.response = {
+            'timestamp': None,
+            'sender': 'Server',
+            'response': 'info',
+            'content': 'Client connected to server. IP:' + str(self.ip) + " Port: " + str(self.port)
+        } 
+
+        self.connection.send(json.dumps(self.response))
+
+        possible_requests = {
+            'login': self.handle_login,
+            'logout': self.handle_logout,
+            'msg': self.handle_msg,
+            'names': self.handle_names,
+            'help': self.handle_help
+        }
+
         # Loop that listens for messages from the client
         while True:
             received_string = self.connection.recv(4096)
-            
-            # TODO: Add handling of received payload from client
+            print received_string
+            payload = json.loads(received_string)
+            if payload['request'] in possible_requests:
+                possible_requests[payload['request']](payload)
+            else:
+                pass
 
+    def handle_login(self,payload):
+        #self.response['timestamp'] = timestamp(timpestamp) #Find method for this
+        self.response['sender'] = 'Server'
+        self.response['response'] = 'info'
+        self.response['content'] = 'Login succesful'
+        self.connection.send(json.dumps(self.response))
+        # Of course, here we also need to implement the actual login logic
+
+    def handle_logout(self,payload):
+        #self.response['timestamp'] = timestamp(timpestamp) #Find method for this
+        self.response['sender'] = 'Server'
+        self.response['response'] = 'info'
+        self.response['content'] = 'Logout succesful'
+        self.connection.send(json.dumps(self.response))
+        # Of course, here we also need to implement the actual logout logic
+
+    def handle_msg(self,payload):
+        #self.response['timestamp'] = timestamp(timpestamp) #Find method for this
+        self.response['sender'] = 'Server'
+        self.response['response'] = 'info'
+        self.response['content'] = 'Message functionality not implemented yet'
+        self.connection.send(json.dumps(self.response))
+        # This needs to be handled differently. How to send message to all users?
+
+    def handle_names(self,payload):
+        #self.response['timestamp'] = timestamp(timpestamp) #Find method for this
+        self.response['sender'] = 'Server'
+        self.response['response'] = 'info'
+        self.response['content'] = 'User list empty'
+        self.connection.send(json.dumps(self.response))
+
+    def handle_help(self,payload):
+        #self.response['timestamp'] = timestamp(timpestamp) #Find method for this
+        self.response['sender'] = 'Server'
+        self.response['response'] = 'info'
+        self.response['content'] = 'login <username> - log in with the given username\nlogout - log out\nmsg <message> - send message\nnames - list users in chat\nhelp - view help text '
+        self.connection.send(json.dumps(self.response))
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     """
