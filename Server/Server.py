@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 import SocketServer
 import json
+import datetime
+import time
 
 """
 Variables and functions that must be used by all the ClientHandler objects
 must be written here (e.g. a dictionary for connected clients)
 """
+
+clientDictionay = {}
+chatHistory = []
 
 class ClientHandler(SocketServer.BaseRequestHandler):
     """
@@ -22,14 +27,14 @@ class ClientHandler(SocketServer.BaseRequestHandler):
         self.ip = self.client_address[0]
         self.port = self.client_address[1]
         self.connection = self.request
+        self.username = None
 
         self.response = {
-            'timestamp': None,
+            'timestamp': datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S'),
             'sender': 'Server',
             'response': 'info',
-            'content': 'Client connected to server. IP:' + str(self.ip) + " Port: " + str(self.port)
+            'content': 'Client connected to server. IP: ' + str(self.ip) + " Port: " + str(self.port)
         } 
-
         self.connection.send(json.dumps(self.response))
 
         possible_requests = {
@@ -46,46 +51,83 @@ class ClientHandler(SocketServer.BaseRequestHandler):
             print received_string
             payload = json.loads(received_string)
             if payload['request'] in possible_requests:
+                self.response['timestamp'] = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
                 possible_requests[payload['request']](payload)
             else:
-                pass
+                self.response['sender'] = 'Server'
+                self.response['response'] = 'error'
+                self.response['content'] = 'Server could not understand request'
+                self.connection.send(json.dumps(self.response))
 
     def handle_login(self,payload):
-        #self.response['timestamp'] = timestamp(timpestamp) #Find method for this
         self.response['sender'] = 'Server'
-        self.response['response'] = 'info'
-        self.response['content'] = 'Login succesful'
+        requestedUsername = payload['content']
+        if self.username != None:
+            self.response['response'] = 'error'
+            self.response['content'] = 'You are already logged in as' + self.username
+        elif requestedUsername == None:
+            self.response['response'] = 'error'
+            self.response['content'] = 'No username specified'
+        elif requestedUsername.isalnum() == False:
+            self.response['response'] = 'error'
+            self.response['content'] = 'Username contains illegal charachters. Only alphanumeric charachters are allowed.'
+        elif clientDictionay.has_key(requestedUsername):
+            self.response['response'] = 'error'
+            self.response['content'] = 'Username ' + requestedUsername + ' is already taken!'
+        else:
+            clientDictionay[requestedUsername] = self.connection
+            self.username = requestedUsername
+            self.response['response'] = 'info'
+            self.response['content'] = 'Login succesful'
+            self.connection.send(json.dumps(self.response))
+            self.response['response'] = 'history'
+            self.response['content'] = chatHistory
         self.connection.send(json.dumps(self.response))
-        # Of course, here we also need to implement the actual login logic
 
     def handle_logout(self,payload):
-        #self.response['timestamp'] = timestamp(timpestamp) #Find method for this
         self.response['sender'] = 'Server'
-        self.response['response'] = 'info'
-        self.response['content'] = 'Logout succesful'
+        if self.username == None:
+            self.response['response'] = 'error'
+            self.response['content'] = 'You are not logged in'
+        else:
+            del clientDictionay[self.username]
+            self.username = None
+            self.response['response'] = 'info'
+            self.response['content'] = 'Logout succesful'
         self.connection.send(json.dumps(self.response))
-        # Of course, here we also need to implement the actual logout logic
 
     def handle_msg(self,payload):
-        #self.response['timestamp'] = timestamp(timpestamp) #Find method for this
-        self.response['sender'] = 'Server'
-        self.response['response'] = 'info'
-        self.response['content'] = 'Message functionality not implemented yet'
-        self.connection.send(json.dumps(self.response))
-        # This needs to be handled differently. How to send message to all users?
+        if self.username == None:
+            self.response['sender'] = 'Server'
+            self.response['response'] = 'error'
+            self.response['content'] = 'You are not logged in'
+            self.connection.send(json.dumps(self.response))
+        else:
+            self.response['sender'] = self.username
+            self.response['response'] = 'message'
+            self.response['content'] = payload['content']
+            responseAsJSON = json.dumps(self.response)
+            for clientSocket in clientDictionay.values():
+                clientSocket.send(responseAsJSON)
+            chatHistory.append(responseAsJSON)
 
     def handle_names(self,payload):
-        #self.response['timestamp'] = timestamp(timpestamp) #Find method for this
         self.response['sender'] = 'Server'
-        self.response['response'] = 'info'
-        self.response['content'] = 'User list empty'
+        if self.username == None:
+            self.response['response'] = 'error'
+            self.response['content'] = 'You are not logged in'
+        elif len(clientDictionay) == 0:
+            self.response['response'] = 'info'
+            self.response['content'] = 'User list empty'
+        else:
+            self.response['response'] = 'info'
+            self.response['content'] = 'List of users logged in:\n' + '\n'.join(clientDictionay) #Converting keys to string
         self.connection.send(json.dumps(self.response))
 
     def handle_help(self,payload):
-        #self.response['timestamp'] = timestamp(timpestamp) #Find method for this
         self.response['sender'] = 'Server'
         self.response['response'] = 'info'
-        self.response['content'] = 'login <username> - log in with the given username\nlogout - log out\nmsg <message> - send message\nnames - list users in chat\nhelp - view help text '
+        self.response['content'] = 'Legal requests:\nlogin <username> - log in with the given username\nlogout - log out\nmsg <message> - send message\nnames - list users in chat\nhelp - view help text '
         self.connection.send(json.dumps(self.response))
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
