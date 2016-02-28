@@ -21,8 +21,7 @@ class Client:
         self.run()
         self.messageReciever = MessageReceiver(self,self.connection)
         self.messageParser = MessageParser()
-
-
+        self.chatClient()
 
     def run(self):
         # Initiate the connection to the server
@@ -53,7 +52,6 @@ class Client:
             payload = self.messageToPayload(userInput)
             self.send_payload(payload)
 
-
 if __name__ == '__main__':
     """
     This is the main method and is executed when you type "python Client.py"
@@ -62,4 +60,3 @@ if __name__ == '__main__':
     No alterations are necessary
     """
     client = Client('localhost', 9998)
-    client.chatClient()
