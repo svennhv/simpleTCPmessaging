@@ -35,7 +35,7 @@ class Client:
         print(messageAsString)
 
     def send_payload(self, data):
-        self.messageReciever.connection.send(data) #This assumes that "data" already is in JSON format
+        self.connection.send(data) #This assumes that "data" already is in JSON format
 
     def messageToPayload(self, message):
         # Converting user input to JSON format. Done in many steps to make the logic transparent
